@@ -1,0 +1,92 @@
+---
+title: "Validating automatic matching"
+authors:
+- affiliation: Department of Statistics and CSAFE, Iowa State University 
+  name: Ganesh Krishnan
+- affiliation: Department of Statistics and CSAFE, Iowa State University 
+  name: Heike Hofmann
+  thanks: The authors gratefully acknowledge funding from CSAFE through cooperative agreement \# 70NANB15H176 between NIST and Iowa State University. 
+biblio-style: apsr
+output:
+  pdf_document:
+    citation_package: natbib
+    fig_caption: yes
+    keep_tex: yes
+    latex_engine: pdflatex
+    template: template.tex
+  html_document: default
+blinded: 0
+keywords:
+- at 
+- least
+- six
+- keywords
+bibliography: bibliography
+abstract: 150 words abstract 
+---
+
+
+\newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
+\newcommand{\gk}[1]{{\textcolor{blue}{#1}}}
+\newcommand{\cited}[1]{{\textcolor{red}{#1}}}
+\setlength\parindent{0pt}
+
+
+
+\tableofcontents
+\newpage
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE, 
+  collapse = TRUE,
+  comment = "",
+  fig.height = 6,
+  fig.width = 6,
+  fig.align = "center",
+  out.width= '\\textwidth',
+  cache = TRUE,
+  fig.path='figures/',
+  echo=FALSE,
+  cache=TRUE
+)
+options(knitr.table.format = "latex")
+library(tidyverse)
+library(kableExtra)
+library(xtable)
+library(gridExtra)
+library(bulletr)
+```
+
+# Background and Motivation
+
+
+
+- random forest \citep{aoas} trained on features extracted from land-to-land comparisons of Hamby 252 and Hamby 44 (now renamed to Hamby 173) available from NIST Ballistics Toolmarks Research Database (NBTRD) \citep{nist}
+- scans taken on a NanoFocus  by Xiaoyu Zheng (Hamby 252) and Wei Chu (Hamby 44, now Hamby 173) at a resolution of 1.5625 $\mu m$. 
+
+- Validation in several steps:
+  - Hamby-44: different scanning method, same barrels
+  - Phoenix PD: different scanning method, Ruger barrels
+  - Houston: different scanning, Ruger, different model
+  - Virginia: different ammunition, Smith & Wesson
+  - LAPD: Beretta
+
+- premise of the scores:
+  - statistically meaningful
+  - stable (i.e. the same score on one comparison means the same for another comparison)
+  - explainable
+
+
+```
+nist_x3p %>% rotate_x3p(angle=-90) %>% y_flip_x3p() %>% image_x3p()
+```
+# Appendix
+\begin{appendix}
+
+
+
+
+\end{appendix}
