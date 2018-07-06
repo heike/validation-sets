@@ -83,6 +83,20 @@ library(bulletr)
 ```
 nist_x3p %>% rotate_x3p(angle=-90) %>% y_flip_x3p() %>% image_x3p()
 ```
+
+```{r}
+hamby <- readr::read_csv("data/features-hamby.csv")
+h44 <- readr::read_csv("data/h44-features.csv")
+phoenix <- readr::read_csv("data/pd-features.csv")
+houston <- readr::read_csv("data/houston-features.csv")
+
+hamby %>% ggplot(aes(x = overlap)) + 
+  geom_density(aes(colour= "NIST")) + 
+  geom_density(data = h44, aes(colour= "Hamby-44")) +
+  geom_density(data = phoenix, aes(colour= "Phoenix")) +
+  geom_density(data = houston, aes(colour= "Houston")) 
+```
+
 # Appendix
 \begin{appendix}
 
