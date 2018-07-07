@@ -85,12 +85,90 @@ nist_x3p %>% rotate_x3p(angle=-90) %>% y_flip_x3p() %>% image_x3p()
 ```
 
 ```{r}
+library(bulletr)
 hamby <- readr::read_csv("data/features-hamby.csv")
 h44 <- readr::read_csv("data/h44-features.csv")
 phoenix <- readr::read_csv("data/pd-features.csv")
 houston <- readr::read_csv("data/houston-features.csv")
 
-hamby %>% ggplot(aes(x = overlap)) + 
+library(randomForest)
+hamby$rfscore <- predict(rtrees, newdata = hamby, type="prob")[,2]
+ones <- hamby %>% select(contains("1"))
+twos <- hamby %>% select(contains("2"))
+scores <- hamby %>% select(-c(names(ones), names(twos)))
+
+hamby1 <- data.frame(ones, twos, scores)
+hamby2 <- data.frame(twos, ones, scores)
+names(hamby2) <- names(hamby1)
+
+hamby <- rbind(hamby1, hamby2)
+
+hamby %>% 
+  filter(barrel1==1, barrel2 == barrel1, study1==study2, 
+         study1=="Hamby252") %>% 
+  ggplot(aes(x = land1, y = land2, fill=rfscore, colour=match)) +
+  geom_tile(size=.5) +
+  scale_fill_gradient2(low="grey30", midpoint=0.35, high="darkred") +
+  scale_colour_manual(values=c(NA, "darkred")) +
+  facet_grid(bullet1~bullet2) +
+  theme(legend.position="bottom") +
+  coord_equal()
+
+
+h44$rfscore <- predict(rtrees, newdata = h44, type="prob")[,2]
+
+bybullet <- h44 %>% 
+  group_by(barrel1, barrel2, bullet1, bullet2) %>%
+  nest()
+bybullet <- bybullet %>% 
+  mutate(
+    bulletmatch = barrel1 == barrel2,
+    bulletmatch = replace(bulletmatch, barrel1 == "Unk", NA),
+    bulletmatch = replace(bulletmatch, barrel2 == "Unk", NA)
+      )
+
+bybullet <- bybullet %>% mutate(
+  rfbullet = data %>% purrr::map_dbl(.f = function(d) {
+    max(compute_average_scores(d$land1, d$land2, d$rfscore))
+  }),
+  rfindex = data %>% purrr::map_dbl(.f = function(d) {
+    which.max(compute_average_scores(d$land1, d$land2, d$rfscore))
+  })
+)
+h44 <- bybullet %>% unnest()
+h44 <- h44 %>% mutate(
+  match = ((land2-land1) %% 6 == rfindex-1) & (bullet1 != bullet2) & (bulletmatch | is.na(bulletmatch))
+)
+
+h44 <- h44 %>% mutate(
+  potentialmatch = match,
+  match = replace(match, is.na(bulletmatch), NA)
+)
+
+h44 %>% filter(barrel1 %in% c("1", "2"), barrel2 %in% c("1", "2")) %>% 
+  ggplot(aes(x = land1, y = land2, fill=rfscore, colour = match)) +
+  geom_tile(size=.5) +
+  scale_fill_gradient2(low="grey30", midpoint=0.35, high="darkred") +
+  scale_colour_manual(values=c(NA, "darkred")) +
+  facet_grid(barrel1+bullet1~barrel2+bullet2, labeller="label_both") +
+  theme(legend.position="bottom") +
+  coord_equal()
+
+h44 %>% filter(barrel1 %in% c("3", "4"), barrel2 %in% c("Unk")) %>% 
+  ggplot(aes(x = land1, y = land2, fill=rfscore, colour = potentialmatch)) +
+  geom_tile(size=.5) +
+  scale_fill_gradient2(low="grey30", midpoint=0.35, high="darkred") +
+  scale_colour_manual(values=c(NA, "darkred")) +
+  facet_grid(barrel1+bullet1~barrel2+bullet2, labeller="label_both") +
+  theme(legend.position="bottom") +
+  coord_equal()
+
+```
+
+
+
+```{r, fig.cap="How similar are the extracted features between the different sets?"}
+hamby %>% ggplot(aes(x = ccf)) + 
   geom_density(aes(colour= "NIST")) + 
   geom_density(data = h44, aes(colour= "Hamby-44")) +
   geom_density(data = phoenix, aes(colour= "Phoenix")) +
